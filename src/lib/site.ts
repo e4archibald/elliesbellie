@@ -13,7 +13,7 @@ export const SITE = {
 
 /**
  * Build an internal href that respects the configured `base`, so the site
- * works both at davejef374.github.io/didactic-potato and at a bare domain.
+ * works both at a bare domain and under a <user>.github.io/<repo> path.
  */
 export function url(path = '/'): string {
   const base = import.meta.env.BASE_URL;

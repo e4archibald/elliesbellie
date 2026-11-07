@@ -13,7 +13,7 @@ on every push to `main`.
 
 ```bash
 npm install
-npm run dev      # http://localhost:4321/didactic-potato/
+npm run dev      # http://localhost:4321/
 npm run build    # -> dist/
 npm run preview  # serve dist/ exactly as Pages will
 npm run check    # types + Astro diagnostics
@@ -75,20 +75,27 @@ and the footer, so the mark only has to be drawn once.
 
 ## Deploying
 
-Pushing to `main` builds and publishes. One-time setup:
+Live at **https://elliesbellie.com**. Pushing to `main` builds and publishes.
 
-**Settings → Pages → Build and deployment → Source: GitHub Actions.**
+One-time setup, in the repository's **Settings → Pages**:
 
-The site then lives at `https://davejef374.github.io/didactic-potato/`.
+1. **Build and deployment → Source: GitHub Actions.**
+2. **Custom domain:** `elliesbellie.com`, then tick **Enforce HTTPS** once
+   GitHub has issued the certificate.
 
-### Custom domain
+DNS, at the registrar:
 
-1. `astro.config.mjs`: set `site` to the domain, delete the `base` line.
-2. Add `public/CNAME` containing just the domain.
-3. Point DNS at GitHub Pages, then set the domain under Settings → Pages.
+| Type  | Name  | Value |
+| ----- | ----- | ----- |
+| A     | `@`   | `185.199.108.153` |
+| A     | `@`   | `185.199.109.153` |
+| A     | `@`   | `185.199.110.153` |
+| A     | `@`   | `185.199.111.153` |
+| CNAME | `www` | `<github-username>.github.io` |
 
-Every internal link goes through `url()` in `src/lib/site.ts`, so nothing else
-needs changing.
+The domain is set in `astro.config.mjs` (`site`). Every internal link goes
+through `url()` in `src/lib/site.ts`, so moving the site to another address
+means changing that one line (plus a `base` if it moves under a path).
 
 ## Layout
 
