@@ -1,9 +1,9 @@
 ---
 title: A face, from the guidelines up
-date: 2026-11-08
+date: 2026-11-04
 category: drawing
 kicker: PENCIL · TWO STAGES
-blurb: One drawing, photographed twice — first as bare construction lines, then with the face drawn in over them.
+blurb: first face and nobody is seeing the final thing because damn i messed up 😭😭 i think more skelingtons are to come i actually like just the empty head
 image: ./a-face-from-the-guidelines-up-2.jpg
 imageAlt: >-
   Pencil drawing of a face seen from the front: hair swept up and over to one side, heavily

@@ -242,6 +242,27 @@ const { strips } = Astro.props;
     line-height: 1.62;
     color: var(--on-text-2);
   }
+  /* The open panel is a fixed height, so the blurb is held to what fits —
+     four lines, or two in the cramped band just above the phone layout,
+     where the kicker and the foot wrap as well — and ends in an ellipsis
+     rather than pushing the foot out of the bottom or being sliced through a
+     line. The entry page always has the whole thing. Phones stack the panel
+     and need no limit. */
+  @media (min-width: 861px) {
+    .strip-blurb {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 4;
+      line-clamp: 4;
+      overflow: hidden;
+    }
+  }
+  @media (min-width: 861px) and (max-width: 979px) {
+    .strip-blurb {
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+    }
+  }
 
   .strip-foot {
     margin-top: auto;
