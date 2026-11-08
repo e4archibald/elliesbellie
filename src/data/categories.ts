@@ -14,7 +14,7 @@ export const CATEGORIES = [
   {
     slug: 'drawing',
     name: 'DRAWING',
-    label: 'Drawing, in ink',
+    label: 'Drawing, in pencil',
     blurb: 'Hatching is only a way of deciding where light is absent. Studies, sheets, and failures.',
   },
   {

@@ -14,6 +14,17 @@ export async function getStaticPaths() {
 const { entry } = Astro.props as { entry: Entry };
 const { Content } = await render(entry);
 const category = categoryBySlug(entry.data.category);
+const { image, imageAlt, gallery } = entry.data;
+
+// A gallery is laid out in one row, each image given width in proportion to
+// its own shape so that they all come out the same height. The flex-grow is
+// that proportion as a whole number: a flex-grow total below 1 would leave
+// part of the row empty, which a single portrait (0.7) on its own would do.
+const plates = (gallery ?? []).map((plate) => ({
+  ...plate,
+  ratio: plate.image.width / plate.image.height,
+}));
+const rowRatio = plates.reduce((sum, plate) => sum + plate.ratio, 0);
 
 // Previous / next by date, so an entry is never a dead end.
 const all = await allEntries();
@@ -36,18 +47,46 @@ const older = i >= 0 && i < all.length - 1 ? all[i + 1] : undefined;
     </header>
 
     {
-      entry.data.image && (
-        <figure class="wrap figure">
-          <Frame
-            image={entry.data.image}
-            alt={entry.data.imageAlt ?? ''}
-            category={entry.data.category}
-            ratio="16 / 9"
-            tone="paper"
-            widths={[720, 1100, 1600]}
-            sizes="(max-width: 1100px) 92vw, 1012px"
-          />
-        </figure>
+      plates.length > 0 ? (
+        <div class="wrap figure">
+          <div class="plates" style={`--row:${rowRatio.toFixed(4)}; --gaps:${plates.length - 1}`}>
+            {plates.map((plate, i) => (
+              <figure
+                class="plate"
+                style={`--r:${plate.ratio.toFixed(4)}; --grow:${Math.round(plate.ratio * 1000)}`}
+              >
+                <Frame
+                  image={plate.image}
+                  alt={plate.alt}
+                  category={entry.data.category}
+                  tone="paper"
+                  widths={[400, 640, 960, 1280]}
+                  sizes="(max-width: 620px) 92vw, (max-width: 1100px) 46vw, 500px"
+                />
+                {plate.caption && (
+                  <figcaption class="mono">
+                    <span class="plate-n">{String(i + 1).padStart(2, '0')}</span>
+                    {plate.caption}
+                  </figcaption>
+                )}
+              </figure>
+            ))}
+          </div>
+        </div>
+      ) : (
+        image && (
+          <figure class:list={['wrap figure', { 'figure--tall': image.height > image.width }]}>
+            <Frame
+              image={image}
+              alt={imageAlt ?? ''}
+              category={entry.data.category}
+              ratio="16 / 9"
+              tone="paper"
+              widths={[720, 1100, 1600]}
+              sizes="(max-width: 1100px) 92vw, 1012px"
+            />
+          </figure>
+        )
       )
     }
 
@@ -125,12 +164,50 @@ const older = i >= 0 && i < all.length - 1 ? all[i + 1] : undefined;
   }
 
   .figure {
+    /* About one screen: the most a portrait or a gallery is allowed to be. */
+    --fit-h: 80svh;
     margin: clamp(26px, 4vw, 44px) auto 0;
   }
   .figure :global(.frame) {
     border-radius: 12px;
     overflow: hidden;
     border: 1px solid var(--rule);
+  }
+  /* A portrait — a drawing, a vertical frame — at the full width would run
+     two screens down the page, so it narrows and centres until it fits on
+     one. Landscape photographs keep the full width. --ratio is the frame's
+     own "width / height", so this is fit-h × w ÷ h. */
+  .figure--tall > :global(.frame) {
+    width: min(100%, calc(var(--fit-h) * var(--ratio)));
+    margin-inline: auto;
+  }
+
+  /* A gallery: one row, each image as wide as its shape asks for (--grow,
+     set above), so they share a height and their captions line up. The row
+     as a whole keeps to the same one-screen limit. */
+  .plates {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--s5);
+    max-width: calc(var(--fit-h) * var(--row) + var(--s5) * var(--gaps));
+    margin-inline: auto;
+  }
+  .plate {
+    flex: var(--grow) 1 0;
+    min-width: 0;
+    margin: 0;
+  }
+  .plate figcaption {
+    margin-top: 12px;
+    font-size: 10px;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+  .plate-n {
+    margin-right: 10px;
+    font-weight: 500;
+    color: var(--accent);
   }
 
   .prose {
@@ -281,6 +358,19 @@ const older = i >= 0 && i < all.length - 1 ? all[i + 1] : undefined;
     .pager-next {
       text-align: left;
       align-items: flex-start;
+    }
+
+    /* On a phone, one above the other: side by side, each would be too
+       small to make out a pencil line. */
+    .plates {
+      flex-direction: column;
+      gap: var(--s6);
+      max-width: none;
+    }
+    .plate {
+      flex: none;
+      width: min(100%, calc(var(--fit-h) * var(--r)));
+      margin-inline: auto;
     }
   }
 </style>
