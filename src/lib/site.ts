@@ -8,7 +8,7 @@ export const SITE = {
    */
   name: 'Ellie’s bellie',
   description:
-    'A working archive: photographs on film, drawings in ink, essays, and machines that emit light.',
+    'A working archive: photographs on film, drawings in pencil, essays, and machines that emit light.',
 } as const;
 
 /**
