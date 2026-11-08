@@ -70,7 +70,18 @@ const { strips } = Astro.props;
               </div>
 
               {featured && (
-                <a class="strip-feature" href={url(`/log/${featured.id}/`)} tabindex="-1" aria-hidden="true">
+                <a
+                  class:list={[
+                    'strip-feature',
+                    {
+                      'strip-feature--tall':
+                        featured.data.image && featured.data.image.height > featured.data.image.width,
+                    },
+                  ]}
+                  href={url(`/log/${featured.id}/`)}
+                  tabindex="-1"
+                  aria-hidden="true"
+                >
                   <Frame
                     image={featured.data.image}
                     alt={featured.data.imageAlt ?? ''}
@@ -180,6 +191,10 @@ const { strips } = Astro.props;
     height: 100%;
     display: grid;
     grid-template-columns: minmax(0, 1fr) clamp(190px, 27vw, 330px);
+    /* The one row is exactly the panel's height, never its content's: that
+       is what gives a portrait below a definite height to be fitted to,
+       instead of letting it push the row taller than the panel. */
+    grid-template-rows: minmax(0, 1fr);
     gap: var(--s6);
   }
 
@@ -280,6 +295,18 @@ const { strips } = Astro.props;
     border-radius: 8px;
     border: 1px solid rgb(var(--open-ink-rgb) / 14%);
     box-shadow: 0 10px 28px rgb(0 0 0 / 34%);
+  }
+
+  /* A portrait — a drawing, a vertical frame — is fitted to the panel's
+     height instead. At the column's full width it would be taller than the
+     panel, and the frame would crop off its top and bottom to make it fit.
+     (Phones keep their 16:10 crop below; there a thumbnail may be a crop.) */
+  @media (min-width: 861px) {
+    .strip-feature--tall :global(.frame) {
+      width: auto;
+      height: 100%;
+      max-width: 100%;
+    }
   }
 
   /* ── Phones: the same five strips, stacked ─────────────────────────────── */

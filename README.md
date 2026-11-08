@@ -43,9 +43,48 @@ That is the only step. The homepage strip counts, the featured item per
 category, the "recently added" rail, the log, the category pages and the RSS
 feed are all derived from these files — nothing to update by hand.
 
+### Several images on one page
+
+For the stages of one drawing, or a run of frames, add a `gallery`. On the
+entry page they sit side by side at the same height (one above the other on
+phones), each with an optional caption, numbered in order. `image` is still
+the one that stands for the entry everywhere else — the strip, the cards, the
+log — so it is usually one of the gallery images too.
+
+```yaml
+image: ./face-2.jpg
+imageAlt: What the cover shows, for anyone who cannot see it
+gallery:
+  - image: ./face-1.jpg
+    alt: What this one shows
+    caption: Construction lines
+  - image: ./face-2.jpg
+    alt: What this one shows
+    caption: Features drawn in
+```
+
+Alt text that contains a colon has to be quoted, or written as a `>-` block
+the way `a-face-from-the-guidelines-up.md` does it.
+
+### Images
+
 Images go next to the entry that uses them and are referenced relatively.
 Astro processes and hashes them at build time. **Export at web sizes** (long
 edge ~2000px, under ~300 KB); the originals belong in a backup, not in git.
+
+Phone photos of pencil drawings go through `tools/clean-sketch.py` first. It
+takes out the lamp's colour, the fall-off toward the edges and any hand
+shadow, sets the paper to one soft white so every drawing on the site sits on
+the same sheet, and saves a 2000px sRGB JPEG with no metadata — no location,
+no camera details. It needs Pillow and numpy.
+
+```bash
+python3 tools/clean-sketch.py photo.jpg src/content/log/name.jpg
+```
+
+Portrait images are handled everywhere: the open strip fits them to its
+height, and an entry page never lets a figure run taller than about one
+screen.
 
 ## Turning the site off-white
 
