@@ -9,7 +9,8 @@ const entries = await allEntries();
 
 // The newest piece with more than one stage gets the slider. Nothing to
 // choose by hand: add a gallery to a newer entry and it takes the place.
-const staged = entries.find((e) => (e.data.gallery?.length ?? 0) >= 2);
+// A series of separate frames has no before and after, so it never does.
+const staged = entries.find((e) => !e.data.series && (e.data.gallery?.length ?? 0) >= 2);
 
 // The table holds a dozen at most; past that it points to the log.
 const ON_TABLE = 12;
