@@ -1,0 +1,75 @@
+---
+/**
+ * A faint graphite line that follows the mouse and fades within a second,
+ * like the side of a pencil dragged across the page. Mouse and pen only —
+ * a finger already covers what it would draw — and never with reduced
+ * motion. It is decoration: nothing can be clicked through it or on it.
+ */
+---
+
+<canvas class="trail" aria-hidden="true"></canvas>
+
+<style>
+  .trail {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 40;
+  }
+</style>
+
+<script>
+  const canvas = document.querySelector<HTMLCanvasElement>('canvas.trail');
+  const fine = matchMedia('(pointer: fine)').matches;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const ctx = canvas?.getContext('2d');
+
+  if (canvas && ctx && fine && !reduce) {
+    const LIFE = 900; // ms a stroke stays on the page
+    const points: { x: number; y: number; t: number }[] = [];
+    let frame = 0;
+    let ink = '42 43 46';
+
+    const size = () => {
+      const r = devicePixelRatio || 1;
+      canvas.width = innerWidth * r;
+      canvas.height = innerHeight * r;
+      ctx.setTransform(r, 0, 0, r, 0, 0);
+    };
+    size();
+    addEventListener('resize', size);
+
+    const draw = () => {
+      const now = performance.now();
+      while (points.length && now - points[0].t > LIFE) points.shift();
+      ctx.clearRect(0, 0, innerWidth, innerHeight);
+      ctx.lineCap = 'round';
+      for (let i = 1; i < points.length; i++) {
+        const a = points[i - 1];
+        const b = points[i];
+        if (b.t - a.t > 80) continue; // a pause lifts the pencil
+        const fade = 1 - (now - b.t) / LIFE;
+        ctx.strokeStyle = `rgb(${ink} / ${(fade * 0.5).toFixed(3)})`;
+        ctx.lineWidth = 1.3 + Math.sin(i) * 0.35;
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+      }
+      frame = points.length ? requestAnimationFrame(draw) : 0;
+    };
+
+    addEventListener('pointermove', (e) => {
+      if (e.pointerType === 'touch') return;
+      if (!frame) {
+        // Pick the colour up fresh each time it starts, so it follows a
+        // switch between light and dark.
+        ink = getComputedStyle(document.documentElement).getPropertyValue('--ink-rgb').trim() || ink;
+        frame = requestAnimationFrame(draw);
+      }
+      points.push({ x: e.clientX, y: e.clientY, t: performance.now() });
+    });
+  }
+</script>

@@ -2,132 +2,89 @@
 import Frame from './Frame.astro';
 import { url, shortDate } from '../lib/site';
 import { categoryBySlug } from '../data/categories';
-import type { Entry } from '../lib/entries';
+import { tilt, type Entry } from '../lib/entries';
 
 interface Props {
   entry: Entry;
-  /** Cards in the horizontal rail snap and have a fixed width. */
-  snap?: boolean;
+  /** Its place on the table, for the order the cards are dropped in. */
+  index?: number;
 }
-const { entry, snap = false } = Astro.props;
+const { entry, index = 0 } = Astro.props;
 const { title, date, category, image, imageAlt, slot } = entry.data;
-
-// An essay has no photograph and never will, so instead of leaving it as the
-// one empty card in the row it runs inverted — ink card on paper, paper card
-// on ink. Same gesture in both modes, opposite direction, which is the rule
-// the whole palette follows.
-const ink = category === 'essays';
 const categoryName = categoryBySlug(category)?.name ?? category;
+
+// Where it landed: its turn, its tape's turn, and how far it slid from its
+// place in the grid. All from its id, so it lies the same way on every page.
+const lie = [
+  `--r:${tilt(entry.id, 6)}deg`,
+  `--tr:${tilt(entry.id, 5, 'tape')}deg`,
+  `--ox:${tilt(entry.id, 14, 'x')}px`,
+  `--oy:${tilt(entry.id, 16, 'y')}px`,
+  `--i:${index}`,
+].join(';');
 ---
 
-<a
-  class:list={['card', { 'card--ink': ink, 'card--snap': snap }]}
-  href={url(`/log/${entry.id}/`)}
->
+<a class="card print" href={url(`/log/${entry.id}/`)} data-category={category} style={lie} draggable="false">
   <Frame
     image={image}
     alt={imageAlt ?? ''}
     slot={slot}
     category={category}
-    tone={ink ? 'ground' : 'paper'}
     crop
-    widths={[260, 520, 780]}
-    sizes="(max-width: 860px) 72vw, 260px"
+    widths={[240, 480, 720]}
+    sizes="(max-width: 560px) 46vw, 240px"
   />
-  <div class="card-meta">
-    <span class="card-line mono">
-      <span class="card-date">{shortDate(date)}</span>
-      <span class="card-cat">{categoryName}</span>
-    </span>
-    <span class="card-title">{title}</span>
-  </div>
+  <span class="card-line mono">{shortDate(date)} · {categoryName}</span>
+  <span class="card-title">{title}</span>
 </a>
 
 <style>
   .card {
-    display: flex;
-    flex-direction: column;
-    border-radius: 12px;
-    overflow: hidden;
-    background: var(--surface);
-    border: 1px solid var(--rule-soft);
-    transition: transform 0.35s var(--ease), box-shadow 0.35s, border-color 0.3s;
+    display: block;
+    padding: 10px 10px 14px;
+    translate: calc(var(--ox) * var(--scatter, 1) + var(--dx, 0px))
+      calc(var(--oy) * var(--scatter, 1) + var(--dy, 0px));
+    transition:
+      translate 0.8s var(--ease),
+      rotate 0.8s var(--ease),
+      box-shadow 0.3s,
+      opacity 0.5s,
+      filter 0.5s;
+    user-select: none;
+    -webkit-user-select: none;
   }
-  .card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 14px 30px var(--shadow);
-    border-color: rgb(var(--ink-rgb) / 22%);
+  .card:hover,
+  .card:focus-visible {
+    box-shadow: var(--lift-high);
+    rotate: calc(var(--r) * 0.4);
   }
 
-  .card--snap {
-    scroll-snap-align: start;
-    flex: none;
-    width: 236px;
-  }
-
-  .card-meta {
-    padding: 13px 15px 16px;
-  }
   .card-line {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 10px;
+    display: block;
+    margin-top: 10px;
     font-weight: 500;
     font-size: 10px;
     letter-spacing: 0.12em;
-  }
-  .card-date {
-    color: var(--text-3);
-  }
-  .card-cat {
-    color: var(--text-3);
+    color: var(--print-ink-3);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
   .card-title {
     display: block;
-    margin-top: 6px;
+    margin-top: 4px;
     font-family: var(--font-serif), Georgia, serif;
-    font-size: 18px;
-    line-height: 1.25;
-    color: var(--ink);
+    font-size: 20px;
+    line-height: 1.12;
+    color: var(--print-ink);
   }
 
-  /* ── The essay card, inverted against whatever the page is ───────────── */
-  :global(:root[data-theme='light']) .card--ink {
-    background: var(--open-bg);
-    border-color: transparent;
-  }
-  :global(:root[data-theme='light']) .card--ink .card-date {
-    color: var(--on-text-3);
-  }
-  :global(:root[data-theme='light']) .card--ink .card-cat {
-    color: var(--on-text-3);
-  }
-  :global(:root[data-theme='light']) .card--ink .card-title {
-    color: var(--open-ink);
-  }
-
-  :global(:root[data-theme='dark']) .card--ink {
-    background: #d5f9e8;
-    border-color: transparent;
-  }
-  :global(:root[data-theme='dark']) .card--ink .card-date {
-    color: rgb(22 22 26 / 76%);
-  }
-  :global(:root[data-theme='dark']) .card--ink .card-cat {
-    color: rgb(22 22 26 / 62%);
-  }
-  :global(:root[data-theme='dark']) .card--ink .card-title {
-    color: #16161a;
-  }
-  /* The frame inside a dark-mode essay card sits on paper, not on ink. */
-  :global(:root[data-theme='dark']) .card--ink :global(.frame) {
-    --frame-ground: #c1f0da;
-    --frame-line: rgb(22 22 26 / 13%);
-    --frame-ink: rgb(22 22 26 / 62%);
-    --frame-tick: rgb(22 22 26 / 30%);
+  @media (max-width: 560px) {
+    .card {
+      padding: 8px 8px 12px;
+    }
+    .card-title {
+      font-size: 17px;
+    }
   }
 </style>

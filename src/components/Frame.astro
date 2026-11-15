@@ -6,19 +6,18 @@ import type { CategorySlug } from '../data/categories';
 interface Props {
   image?: ImageMetadata;
   alt?: string;
-  /** Caption shown when there is no photograph yet. */
+  /** Pencilled on the frame when there is no picture yet. */
   slot?: string;
   category: CategorySlug;
   /** CSS aspect-ratio, e.g. "4 / 5". Empty frames always take it. A real
-   *  photograph keeps its own proportions unless `crop` is set. */
+   *  picture keeps its own proportions unless `crop` is set. */
   ratio?: string;
-  /** Force `ratio` on a real photograph too, centre-cropping it. Used where
-   *  the frame is one cell of an index and the row has to stay a row. */
+  /** Force `ratio` on a real picture too, centre-cropping it. Used where the
+   *  frame is one card of many and the row has to stay a row. */
   crop?: boolean;
-  /** "paper" sits on the page; "ground" sits on the near-black open strip. */
-  tone?: 'paper' | 'ground';
   widths?: number[];
   sizes?: string;
+  loading?: 'lazy' | 'eager';
   class?: string;
 }
 
@@ -28,78 +27,57 @@ const {
   slot = 'no image yet',
   category,
   ratio = '4 / 5',
-  tone = 'paper',
   crop = false,
   widths = [340, 680, 1020],
   sizes = '(max-width: 860px) 92vw, 340px',
+  loading = 'lazy',
   class: className,
 } = Astro.props;
 
-// An index cell keeps the given ratio so the grid stays a grid — one
-// landscape frame among four portraits leaves a hole otherwise, and a
-// thumbnail is allowed to be a crop. Everywhere there is room to show the
-// photograph whole (the open panel, an entry's header) it keeps its own
-// proportions and nothing the photographer framed is thrown away.
+// A card keeps the given ratio so a table of them stays tidy — a thumbnail is
+// allowed to be a crop. Everywhere there is room to show the picture whole
+// (an entry's own page) it keeps its proportions, and nothing that was
+// framed or drawn is thrown away.
 const frameRatio = image && !crop ? `${image.width} / ${image.height}` : ratio;
 ---
 
 <div
-  class:list={['frame', `tone-${tone}`, className]}
+  class:list={['frame', className]}
   data-pattern={image ? undefined : category}
   style={`--ratio:${frameRatio}`}
 >
   {
     image ? (
-      <Image src={image} alt={alt} widths={widths} sizes={sizes} />
+      <Image src={image} alt={alt} widths={widths} sizes={sizes} loading={loading} draggable="false" />
     ) : (
-      <>
-        <span class="tick tl" /><span class="tick tr" />
-        <span class="tick bl" /><span class="tick br" />
-        <span class="frame-slot mono">{slot}</span>
-      </>
+      <span class="frame-slot">{slot}</span>
     )
   }
 </div>
 
 <style>
   /* ── The empty frame ──────────────────────────────────────────────────────
-     Most of this archive has no photograph attached yet, so "no image" is a
+     Most of this archive has no picture attached yet, so "no image" is a
      state the design has to carry rather than apologise for. Each category
-     gets its own rule pattern — scan lines for film, cross-hatch for ink,
-     ruled paper for essays, graph paper for the bench, loose diagonals for
-     the drawer — so an empty grid still reads as an index of five different
-     habits instead of fifteen identical grey boxes. */
+     is shaded its own way — scan lines for film, cross-hatch for pencil,
+     ruled lines for essays, graph paper for the bench, loose diagonals for
+     the drawer — so an empty table still reads as five different habits
+     instead of a row of identical grey boxes. A frame always sits on a
+     print, so it takes the print's colours, not the page's. */
   .frame {
+    --frame-line: rgb(42 43 46 / 15%);
     position: relative;
     aspect-ratio: var(--ratio);
     overflow: hidden;
-    background-color: var(--frame-ground);
+    background-color: var(--print-ground);
     background-image: var(--frame-pattern, none);
     display: grid;
     place-items: center;
   }
 
-  /* The caption is real information ("film scan · 4:5"), so it clears 4.5:1
-     against its own ground rather than the page's. The rules and ticks are
-     decoration and stay quiet. */
-  .tone-paper {
-    --frame-ground: var(--surface-2);
-    --frame-line: rgb(var(--ink-rgb) / 13%);
-    --frame-ink: rgb(var(--ink-rgb) / 62%);
-    --frame-tick: rgb(var(--ink-rgb) / 30%);
-  }
-  .tone-ground {
-    --frame-ground: var(--open-ground);
-    --frame-line: rgb(var(--open-ink-rgb) / 16%);
-    --frame-ink: rgb(var(--open-ink-rgb) / 58%);
-    --frame-tick: rgb(var(--open-ink-rgb) / 38%);
-  }
-
-  /* The picture fills the frame exactly, and any crop is taken from its
-     middle. Pinned to the frame's edges rather than left as a grid item: in
-     the grid, a picture taller than its frame's ratio (a portrait in a 16:10
-     or 4:5 slot) grows the row to its own height, and the frame then shows
-     only its top. */
+  /* Pinned to the frame's edges rather than left as a grid item: in the
+     grid, a picture taller than the frame's ratio grows the row to its own
+     height and the frame then shows only its top. */
   .frame :global(img) {
     position: absolute;
     inset: 0;
@@ -107,28 +85,22 @@ const frameRatio = image && !crop ? `${image.width} / ${image.height}` : ratio;
     height: 100%;
     object-fit: cover;
     display: block;
+    user-select: none;
+    -webkit-user-drag: none;
   }
 
   /* Film: scan lines. */
   [data-pattern='photography'] {
-    --frame-pattern: repeating-linear-gradient(
-      0deg,
-      var(--frame-line) 0 1px,
-      transparent 1px 6px
-    );
+    --frame-pattern: repeating-linear-gradient(0deg, var(--frame-line) 0 1px, transparent 1px 6px);
   }
-  /* Ink: cross-hatch. */
+  /* Pencil: cross-hatch. */
   [data-pattern='drawing'] {
     --frame-pattern: repeating-linear-gradient(45deg, var(--frame-line) 0 1px, transparent 1px 8px),
       repeating-linear-gradient(-45deg, var(--frame-line) 0 1px, transparent 1px 8px);
   }
-  /* Essays: ruled paper. */
+  /* Essays: ruled lines. */
   [data-pattern='essays'] {
-    --frame-pattern: repeating-linear-gradient(
-      0deg,
-      var(--frame-line) 0 1px,
-      transparent 1px 14px
-    );
+    --frame-pattern: repeating-linear-gradient(0deg, var(--frame-line) 0 1px, transparent 1px 14px);
   }
   /* The bench: graph paper. */
   [data-pattern='electronics'] {
@@ -137,84 +109,27 @@ const frameRatio = image && !crop ? `${image.width} / ${image.height}` : ratio;
   }
   /* The drawer: loose diagonals. */
   [data-pattern='found'] {
-    --frame-pattern: repeating-linear-gradient(
-      52deg,
-      var(--frame-line) 0 1px,
-      transparent 1px 13px
-    );
+    --frame-pattern: repeating-linear-gradient(52deg, var(--frame-line) 0 1px, transparent 1px 13px);
   }
 
-  /* Corner ticks — a contact sheet's crop marks. */
-  .tick {
-    position: absolute;
-    width: 9px;
-    height: 9px;
-    border: 0 solid var(--frame-tick);
-  }
-  .tl {
-    top: 9px;
-    left: 9px;
-    border-top-width: 1px;
-    border-left-width: 1px;
-  }
-  .tr {
-    top: 9px;
-    right: 9px;
-    border-top-width: 1px;
-    border-right-width: 1px;
-  }
-  .bl {
-    bottom: 9px;
-    left: 9px;
-    border-bottom-width: 1px;
-    border-left-width: 1px;
-  }
-  .br {
-    bottom: 9px;
-    right: 9px;
-    border-bottom-width: 1px;
-    border-right-width: 1px;
-  }
-
+  /* What will go here, pencilled on a scrap of the print's paper. It is real
+     information ("film scan · 4:5"), so it clears 4.5:1 on that scrap. */
   .frame-slot {
     position: relative;
-    font-size: 10px;
-    letter-spacing: 0.08em;
-    color: var(--frame-ink);
+    max-width: 88%;
+    padding: 2px 10px;
+    rotate: -3deg;
+    background: var(--print);
+    font-family: var(--font-hand), cursive;
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 1.25;
     text-align: center;
-    padding: 10px 18px;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      var(--frame-ground) 14%,
-      var(--frame-ground) 86%,
-      transparent
-    );
-    max-width: 92%;
+    text-transform: lowercase;
+    color: var(--print-ink-3);
   }
 
-  /* Small frames have no room for ticks or a caption. */
-  .frame.is-small .tick {
-    width: 6px;
-    height: 6px;
-    inset: auto;
-  }
-  .frame.is-small .tl {
-    top: 5px;
-    left: 5px;
-  }
-  .frame.is-small .tr {
-    top: 5px;
-    right: 5px;
-  }
-  .frame.is-small .bl {
-    bottom: 5px;
-    left: 5px;
-  }
-  .frame.is-small .br {
-    bottom: 5px;
-    right: 5px;
-  }
+  /* Thumbnails have no room for a caption. */
   .frame.is-small .frame-slot {
     display: none;
   }

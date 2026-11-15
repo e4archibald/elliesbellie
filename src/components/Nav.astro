@@ -3,10 +3,10 @@ import { url } from '../lib/site';
 import Wordmark from './Wordmark.astro';
 
 const links = [
-  { label: 'Work', href: url('/#collections') },
-  { label: 'Writing', href: url('/c/essays/') },
-  { label: 'Log', href: url('/log/') },
-  { label: 'About', href: url('/about/') },
+  { label: 'work', href: url('/#table') },
+  { label: 'writing', href: url('/c/essays/') },
+  { label: 'log', href: url('/log/') },
+  { label: 'about', href: url('/about/') },
 ];
 
 const here = Astro.url.pathname;
@@ -52,57 +52,69 @@ const isCurrent = (href: string) => {
     position: sticky;
     top: 0;
     z-index: 20;
-    background: color-mix(in srgb, var(--bg) 93%, transparent);
-    backdrop-filter: blur(14px) saturate(1.1);
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(10px);
   }
 
   .nav-inner {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 20px;
-    padding-block: 18px;
+    gap: 4px 20px;
+    padding-block: 10px;
   }
 
   nav ul {
     display: flex;
-    gap: clamp(14px, 2.4vw, 26px);
+    flex-wrap: wrap;
+    gap: 0 clamp(12px, 2.6vw, 26px);
     list-style: none;
     margin: 0;
     padding: 0;
   }
 
+  /* Pencilled in, and the page you are on is underlined in pen. */
   nav a {
-    font-size: 13px;
+    display: inline-block;
+    padding: 6px 2px;
+    font-family: var(--font-hand), cursive;
+    font-weight: 600;
+    font-size: 24px;
+    line-height: 1.25;
     color: var(--text-3);
-    transition: color 0.25s;
+    transition: color 0.25s, rotate 0.3s var(--ease);
   }
-  nav a:hover,
+  nav a:hover {
+    color: var(--accent);
+    rotate: -3deg;
+  }
   nav a[aria-current='page'] {
     color: var(--ink);
+    text-decoration: underline wavy var(--accent) 1px;
+    text-underline-offset: 7px;
   }
 
   #theme-toggle {
     flex: none;
     display: grid;
     place-items: center;
-    width: 32px;
-    height: 32px;
+    width: 44px;
+    height: 44px;
     padding: 0;
-    border: 1px solid var(--rule);
-    border-radius: 8px;
+    border: 0;
+    border-radius: 50%;
     background: transparent;
     color: var(--text-3);
     cursor: pointer;
-    transition: color 0.25s, border-color 0.25s;
+    transition: color 0.25s, rotate 0.6s var(--ease);
   }
   #theme-toggle:hover {
     color: var(--accent);
-    border-color: var(--accent);
+    rotate: 25deg;
   }
   #theme-toggle svg {
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
     grid-area: 1 / 1;
   }
 
@@ -112,15 +124,15 @@ const isCurrent = (href: string) => {
     display: none;
   }
 
+  /* On a phone the links get a line of their own under the name. */
   @media (max-width: 560px) {
-    nav a {
-      font-size: 12px;
-    }
-    nav ul {
-      gap: 12px;
-    }
     .nav-inner {
-      gap: 12px;
+      flex-wrap: wrap;
+      padding-bottom: 4px;
+    }
+    nav {
+      order: 3;
+      width: 100%;
     }
   }
 </style>

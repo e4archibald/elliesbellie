@@ -2,14 +2,16 @@
 import { SITE, url } from '../lib/site';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+import PencilTrail from '../components/PencilTrail.astro';
 import '../styles/fonts.css';
 import '../styles/global.css';
 
-// Hashed URLs for the three faces that are on screen before anything is
-// scrolled — the body text, the headline, and every mono label.
+// Hashed URLs for the faces that are on screen before anything is scrolled —
+// the body text, the headline, every mono label, and the pencilled nav.
 import sansLatin from '../styles/fonts/instrument-sans-normal-latin.woff2?url';
 import serifLatin from '../styles/fonts/instrument-serif-normal-latin.woff2?url';
 import monoLatin from '../styles/fonts/jetbrains-mono-normal-latin.woff2?url';
+import handLatin from '../styles/fonts/caveat-normal-latin.woff2?url';
 
 interface Props {
   title?: string;
@@ -42,13 +44,17 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://example.com
     <link rel="preload" as="font" type="font/woff2" href={sansLatin} crossorigin />
     <link rel="preload" as="font" type="font/woff2" href={serifLatin} crossorigin />
     <link rel="preload" as="font" type="font/woff2" href={monoLatin} crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href={handLatin} crossorigin />
 
     <!--
       Resolve the theme before first paint, or the page flashes paper-white on
-      its way to near-black. Kept inline and tiny for that reason.
+      its way to near-black. Kept inline and tiny for that reason. It also
+      marks the page as scripted, so the things that draw themselves in can
+      start hidden without leaving a blank page for anyone with JS off.
     -->
     <script is:inline>
       (() => {
+        document.documentElement.classList.add('js');
         try {
           const saved = localStorage.getItem('theme');
           const system = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -66,5 +72,6 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://example.com
       <slot />
     </main>
     <Footer />
+    <PencilTrail />
   </body>
 </html>

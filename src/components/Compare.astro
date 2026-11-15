@@ -1,0 +1,252 @@
+---
+import { Image } from 'astro:assets';
+import { url, shortDate } from '../lib/site';
+import { tilt, type Entry } from '../lib/entries';
+
+interface Props {
+  /** An entry with at least two gallery images; the first two are compared. */
+  entry: Entry;
+}
+const { entry } = Astro.props;
+const { title, kicker, blurb, date, gallery = [] } = entry.data;
+const [a, b] = gallery;
+const href = url(`/log/${entry.id}/`);
+const widths = [400, 640, 860];
+const sizes = '(max-width: 760px) 86vw, 430px';
+---
+
+<!--
+  Two stages of one piece, one over the other, and a line between them to
+  drag. The first stage covers the second at the start: the reveal is the
+  reader's to make.
+-->
+{
+  a && b && (
+    <section class="two wrap" aria-labelledby="two-h">
+      <div class="two-text">
+        <p class="kicker">
+          {kicker} · {shortDate(date)}
+        </p>
+        <h2 id="two-h">
+          <a href={href}>{title}</a>
+        </h2>
+        <p class="hand quote">“{blurb}”</p>
+        <a class="hand u-link more" href={href}>
+          read the entry →
+        </a>
+      </div>
+
+      <figure class="two-fig">
+        <div
+          class="print compare"
+          style={`--r:${tilt(entry.id, 2)}deg; --tr:${tilt(entry.id, 5, 'tape')}deg; --ratio:${a.image.width} / ${a.image.height}`}
+        >
+          <div class="stage">
+            <Image src={b.image} alt={b.alt} widths={widths} sizes={sizes} draggable="false" />
+            <Image class="top" src={a.image} alt={a.alt} widths={widths} sizes={sizes} draggable="false" />
+            <span class="line" aria-hidden="true" />
+          </div>
+        </div>
+        <figcaption class="hand labels">
+          <span>← {a.caption ?? 'first'}</span>
+          <span>{b.caption ?? 'then'} →</span>
+        </figcaption>
+        <label class="range" hidden>
+          <span class="hand">slide to compare the two stages</span>
+          <input type="range" min="0" max="100" value="100" />
+        </label>
+      </figure>
+    </section>
+  )
+}
+
+<style>
+  .two {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--s6) clamp(24px, 6vw, 80px);
+    align-items: center;
+    padding-top: var(--section);
+  }
+
+  .kicker {
+    margin: 0;
+  }
+  h2 {
+    margin: 10px 0 18px;
+    font-size: clamp(34px, 4.4vw, 52px);
+    line-height: 1.05;
+  }
+  h2 a:hover {
+    color: var(--accent);
+  }
+  .quote {
+    margin: 0;
+    max-width: 30ch;
+    color: var(--text-2);
+  }
+  .more {
+    display: inline-block;
+    margin-top: 18px;
+    font-weight: 600;
+  }
+
+  .two-fig {
+    margin: 0;
+    display: grid;
+    justify-items: center;
+  }
+  .compare {
+    --p: 100%;
+    width: min(100%, 430px);
+    touch-action: pan-y;
+  }
+  .stage {
+    position: relative;
+    aspect-ratio: var(--ratio);
+    overflow: hidden;
+    background: var(--print-ground);
+  }
+  .stage :global(img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+  .stage :global(.top) {
+    clip-path: inset(0 calc(100% - var(--p)) 0 0);
+  }
+  .line {
+    display: none;
+  }
+
+  .labels {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    width: min(100%, 430px);
+    margin-top: 16px;
+    font-weight: 600;
+    text-transform: lowercase;
+  }
+  .labels span:first-child {
+    rotate: -3deg;
+  }
+  .labels span:last-child {
+    rotate: 2deg;
+    text-align: right;
+  }
+
+  .range {
+    display: block;
+    width: min(100%, 430px);
+    margin-top: 12px;
+  }
+  .range span {
+    color: var(--text-3);
+    font-size: 21px;
+  }
+  .range input {
+    display: block;
+    width: 100%;
+    height: 44px;
+    accent-color: var(--accent);
+  }
+
+  /* With the script there, the stage is draggable and gets its handle. */
+  :global(.js) .compare {
+    cursor: ew-resize;
+  }
+  :global(.js) .line {
+    display: block;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--p);
+    width: 2px;
+    margin-left: -1px;
+    background: var(--accent);
+  }
+  :global(.js) .line::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 34px;
+    height: 34px;
+    margin: -17px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 4px var(--print);
+  }
+
+  @media (max-width: 760px) {
+    .two {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>
+
+<script>
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  for (const fig of document.querySelectorAll<HTMLElement>('.two-fig')) {
+    const print = fig.querySelector<HTMLElement>('.compare')!;
+    const stage = print.querySelector<HTMLElement>('.stage')!;
+    const label = fig.querySelector<HTMLLabelElement>('.range')!;
+    const input = label.querySelector('input')!;
+    label.hidden = false;
+
+    const set = (v: number) => {
+      const p = Math.round(Math.min(100, Math.max(0, v)));
+      print.style.setProperty('--p', `${p}%`);
+      input.value = String(p);
+    };
+    // Once the reader has taken hold of it, the opening swing stops for good.
+    let touched = false;
+    input.addEventListener('input', () => {
+      touched = true;
+      set(+input.value);
+    });
+
+    let dragging = false;
+    const fromPointer = (e: PointerEvent) => {
+      const r = stage.getBoundingClientRect();
+      set(((e.clientX - r.left) / r.width) * 100);
+    };
+    print.addEventListener('pointerdown', (e) => {
+      dragging = touched = true;
+      print.setPointerCapture(e.pointerId);
+      fromPointer(e);
+    });
+    print.addEventListener('pointermove', (e) => dragging && fromPointer(e));
+    print.addEventListener('pointerup', () => (dragging = false));
+    print.addEventListener('pointercancel', () => (dragging = false));
+
+    // The first time it comes into view, the line swings across and back,
+    // so it is plain there is something under the first stage.
+    if (!reduce && 'IntersectionObserver' in window) {
+      const io = new IntersectionObserver(
+        ([e]) => {
+          if (!e.isIntersecting) return;
+          io.disconnect();
+          let start = 0;
+          const swing = (t: number) => {
+            if (touched) return;
+            start ||= t;
+            const k = (t - start) / 1800;
+            if (k >= 1) return set(100);
+            set(100 - Math.sin(k * Math.PI) * 45);
+            requestAnimationFrame(swing);
+          };
+          setTimeout(() => requestAnimationFrame(swing), 300);
+        },
+        { threshold: 0.6 },
+      );
+      io.observe(print);
+    }
+  }
+</script>

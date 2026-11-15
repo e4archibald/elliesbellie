@@ -16,16 +16,26 @@ export async function entriesIn(slug: CategorySlug): Promise<Entry[]> {
 }
 
 /**
- * The homepage strips: each category with its real count and its newest entry
- * as the featured one. Categories with nothing in them yet still render —
- * they just read "0 ITEMS" and say so honestly.
+ * How far a print is turned as it lies on the page, in degrees, worked out
+ * from its id. The same entry lies at the same angle on every page and in
+ * every build, and nothing is ever quite straight — a print put down by hand
+ * isn't. Pass a different `salt` for a second, unrelated number (the tape,
+ * an offset) from the same id.
  */
-export async function strips() {
-  const entries = await allEntries();
-  return CATEGORIES.map((category) => {
-    const mine = entries.filter((e) => e.data.category === category.slug);
-    return { category, count: mine.length, featured: mine[0] };
-  });
+export function tilt(id: string, max = 6, salt = ''): number {
+  let h = 2166136261;
+  for (const ch of id + salt) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+  const unit = ((h >>> 0) % 10000) / 10000; // 0 … 1
+  let deg = (unit * 2 - 1) * max;
+  if (Math.abs(deg) < max * 0.2) deg += Math.sign(deg || 1) * max * 0.25;
+  return Math.round(deg * 10) / 10;
 }
 
-export type Strip = Awaited<ReturnType<typeof strips>>[number];
+/** Each category with how many entries are filed in it, in page order. */
+export async function drawers() {
+  const entries = await allEntries();
+  return CATEGORIES.map((category) => ({
+    category,
+    count: entries.filter((e) => e.data.category === category.slug).length,
+  }));
+}

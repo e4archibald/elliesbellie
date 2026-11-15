@@ -1,20 +1,29 @@
 ---
 import Base from '../layouts/Base.astro';
-import Hero from '../components/Hero.astro';
-import Strips from '../components/Strips.astro';
-import RecentRail from '../components/RecentRail.astro';
-import { allEntries, strips } from '../lib/entries';
+import DrawnHeadline from '../components/DrawnHeadline.astro';
+import Compare from '../components/Compare.astro';
+import Table from '../components/Table.astro';
+import { allEntries } from '../lib/entries';
 
 const entries = await allEntries();
 
-// One query, two readings of it: the hero's index lists every category as a
-// line of type, the strips below open one at a time.
-const stripData = await strips();
-const recent = entries.slice(0, 8);
+// The newest piece with more than one stage gets the slider. Nothing to
+// choose by hand: add a gallery to a newer entry and it takes the place.
+const staged = entries.find((e) => (e.data.gallery?.length ?? 0) >= 2);
+
+// The table holds a dozen at most; past that it points to the log.
+const ON_TABLE = 12;
+const onTable = entries.slice(0, ON_TABLE);
+const all = entries.length <= ON_TABLE;
 ---
 
 <Base bare>
-  <Hero index={stripData} />
-  <Strips strips={stripData} />
-  <RecentRail entries={recent} />
+  <DrawnHeadline />
+  {staged && <Compare entry={staged} />}
+  <Table
+    entries={onTable}
+    heading={all ? 'Everything, on the table' : 'The newest, on the table'}
+    filters
+    more={all ? undefined : { href: '/log/', label: `all ${entries.length} in the log →` }}
+  />
 </Base>

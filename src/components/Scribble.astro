@@ -1,0 +1,39 @@
+---
+/**
+ * A line in pen under a heading, drawn on as the page opens. Pure CSS, so
+ * it is there without JavaScript too; with reduced motion it is just there.
+ */
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<svg class:list={['scribble', className]} viewBox="0 0 240 22" aria-hidden="true">
+  <path pathLength="1" d="M3 12 C 60 6, 130 17, 237 8 M 34 18 C 90 21, 150 14, 214 17"></path>
+</svg>
+
+<style>
+  .scribble {
+    display: block;
+    width: 240px;
+    max-width: 70%;
+    height: 22px;
+    margin-top: 10px;
+    overflow: visible;
+  }
+  path {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2.6;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: draw 0.9s 0.35s ease-out forwards;
+  }
+  @keyframes draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+</style>

@@ -1,10 +1,11 @@
 ---
 import { url, shortDate } from '../lib/site';
 import Wordmark from './Wordmark.astro';
-import { allEntries } from '../lib/entries';
+import { allEntries, drawers } from '../lib/entries';
 
 const entries = await allEntries();
 const latest = entries[0];
+const shelves = await drawers();
 const year = new Date().getFullYear();
 ---
 
@@ -22,17 +23,33 @@ const year = new Date().getFullYear();
       </p>
     </div>
 
-    <nav class="col" aria-label="Footer">
-      <h2 class="mono label">ELSEWHERE</h2>
-      <a class="u-link" href={url('/log/')}>The whole log</a>
-      <a class="u-link" href={url('/about/')}>About</a>
-      <a class="u-link" href={url('/rss.xml')}>Feed</a>
+    <nav class="col" aria-labelledby="foot-drawers">
+      <h2 class="hand label" id="foot-drawers">the drawers</h2>
+      <ul>
+        {
+          shelves.map(({ category, count }) => (
+            <li>
+              <a class="u-link" href={url(`/c/${category.slug}/`)}>{category.label}</a>
+              <span class="mono n">{String(count).padStart(2, '0')}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <nav class="col" aria-labelledby="foot-elsewhere">
+      <h2 class="hand label" id="foot-elsewhere">elsewhere</h2>
+      <ul>
+        <li><a class="u-link" href={url('/log/')}>The whole log</a></li>
+        <li><a class="u-link" href={url('/about/')}>About</a></li>
+        <li><a class="u-link" href={url('/rss.xml')}>Feed</a></li>
+      </ul>
     </nav>
 
     <div class="col">
-      <h2 class="mono label">COLOPHON</h2>
+      <h2 class="hand label">colophon</h2>
       <p>
-        Set in Instrument Serif, Instrument Sans and JetBrains Mono, served from
+        Set in Instrument Serif, Instrument Sans, JetBrains Mono and Caveat, served from
         this domain. Static pages, no trackers, no cookies.
       </p>
       <p class="mono stat">© {year}</p>
@@ -42,13 +59,13 @@ const year = new Date().getFullYear();
 
 <style>
   .foot {
-    border-top: 1px solid var(--rule);
+    border-top: 1px dashed var(--rule);
     margin-top: var(--section);
   }
 
   .foot-inner {
     display: grid;
-    grid-template-columns: 1.5fr 1fr 1.3fr;
+    grid-template-columns: 1.4fr 1.1fr 0.8fr 1.2fr;
     gap: var(--s6) var(--s7);
     padding-block: var(--s7) var(--s8);
   }
@@ -61,51 +78,63 @@ const year = new Date().getFullYear();
   }
 
   .label {
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 0.16em;
-    color: var(--text-3);
-    margin: 0 0 var(--s1);
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
   }
 
   p {
     margin: 0;
     max-width: 34ch;
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.65;
     color: var(--text-3);
   }
 
   .stat {
-    font-size: 10px;
+    font-size: 10.5px;
     line-height: 1.9;
     letter-spacing: 0.12em;
-    color: var(--text-3);
   }
-
   .col-about .stat {
     margin-top: var(--s2);
   }
 
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 6px;
+    width: 100%;
+  }
+  li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
   nav a {
-    font-size: 13.5px;
+    font-size: 14.5px;
     color: var(--text-2);
   }
-  nav a:hover {
-    color: var(--accent);
+  .n {
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    color: var(--text-3);
   }
 
-  @media (max-width: 860px) {
+  @media (max-width: 900px) {
     .foot-inner {
       grid-template-columns: 1fr 1fr;
-    }
-    .col-about {
-      grid-column: 1 / -1;
     }
   }
   @media (max-width: 520px) {
     .foot-inner {
       grid-template-columns: 1fr;
+    }
+    ul {
+      max-width: 320px;
     }
   }
 </style>
