@@ -48,14 +48,17 @@ by hand.
 ### Several images on one page
 
 For the stages of one drawing, or a run of frames, add a `gallery`. On the
-entry page they sit side by side at the same height (one above the other on
-phones), each with an optional caption, numbered in order. `image` is still
-the one that stands for the entry everywhere else — the cards and the log —
-so it is usually one of the gallery images too.
+entry page they sit two to a row, each pair at the same height (one above the
+other on phones), each with an optional caption, numbered in order. An odd
+one at the end keeps the size of the pairs above it. `image` is still the one
+that stands for the entry everywhere else — the cards and the log — so it is
+usually one of the gallery images too.
 
 The newest entry with two or more gallery images also gets the slider on the
 homepage: the first image laid over the second, with a line to drag between
-them. The captions label its two ends.
+them. The captions label its two ends. A run of separate frames — a roll, a
+walk — has no before and after to compare, so mark it `series: true` and it is
+left off the slider (see `somebody-was-blowing-bubbles.md`).
 
 ```yaml
 image: ./face-2.jpg
@@ -69,8 +72,9 @@ gallery:
     caption: Features drawn in
 ```
 
-Alt text that contains a colon has to be quoted, or written as a `>-` block
-the way `a-face-from-the-guidelines-up.md` does it.
+A title, blurb or alt text with a colon followed by a space in it has to be
+quoted, or written as a `>-` block the way `a-face-from-the-guidelines-up.md`
+does it.
 
 ### Images
 

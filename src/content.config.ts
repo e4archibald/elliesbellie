@@ -33,6 +33,12 @@ const log = defineCollection({
           }),
         )
         .optional(),
+      /**
+       * The gallery is a run of separate frames — a roll, a walk — rather
+       * than the stages of one piece, so it is never put on the homepage
+       * slider, which is for comparing a before with an after.
+       */
+      series: z.boolean().default(false),
       /** Text shown inside the placeholder when there is no image. */
       slot: z.string().default('no image yet'),
       draft: z.boolean().default(false),

@@ -17,16 +17,24 @@ const { Content } = await render(entry);
 const category = categoryBySlug(entry.data.category);
 const { image, imageAlt, gallery } = entry.data;
 
-// A gallery is laid out in one row, each image given width in proportion to
-// its own shape so that they all come out the same height. The flex-grow is
-// that proportion as a whole number: a flex-grow total below 1 would leave
-// part of the row empty, which a single portrait (0.7) on its own would do.
+// A gallery is laid out in rows of two, each image given width in proportion
+// to its own shape so that the pair come out the same height. Two stages of a
+// drawing sit side by side; a longer run of frames goes two to a row, because
+// four in one row would each be too small to look at. The flex-grow is that
+// proportion as a whole number: a flex-grow total below 1 would leave part of
+// the row empty, which a single portrait (0.7) on its own would do.
+const PER_ROW = 2;
 const plates = (gallery ?? []).map((plate, i) => ({
   ...plate,
+  n: i + 1,
   ratio: plate.image.width / plate.image.height,
   lie: `--r:${tilt(entry.id, 2.5, `plate${i}`)}deg; --tr:${tilt(entry.id, 5, `tape${i}`)}deg`,
 }));
-const rowRatio = plates.reduce((sum, plate) => sum + plate.ratio, 0);
+const rows = [];
+for (let r = 0; r < plates.length; r += PER_ROW) {
+  const row = plates.slice(r, r + PER_ROW);
+  rows.push({ plates: row, ratio: row.reduce((sum, plate) => sum + plate.ratio, 0) });
+}
 
 // Previous / next by date, so an entry is never a dead end.
 const all = await allEntries();
@@ -51,32 +59,37 @@ const older = i >= 0 && i < all.length - 1 ? all[i + 1] : undefined;
 
     {
       plates.length > 0 ? (
-        <div class="wrap figure">
-          <div class="plates" style={`--row:${rowRatio.toFixed(4)}; --gaps:${plates.length - 1}`}>
-            {plates.map((plate, n) => (
-              <figure
-                class="plate"
-                style={`--r-plate:${plate.ratio.toFixed(4)}; --grow:${Math.round(plate.ratio * 1000)}`}
-              >
-                <div class="print" style={plate.lie}>
-                  <Frame
-                    image={plate.image}
-                    alt={plate.alt}
-                    category={entry.data.category}
-                    widths={[400, 640, 960, 1280]}
-                    sizes="(max-width: 620px) 92vw, (max-width: 1100px) 46vw, 500px"
-                    loading="eager"
-                  />
-                </div>
-                {plate.caption && (
-                  <figcaption class="hand">
-                    <span class="plate-n mono">{String(n + 1).padStart(2, '0')}</span>
-                    {plate.caption}
-                  </figcaption>
-                )}
-              </figure>
-            ))}
-          </div>
+        <div class="wrap figure rows">
+          {rows.map((row) => (
+            <div
+              class:list={['plates', { 'plates--lone': row.plates.length < PER_ROW && rows.length > 1 }]}
+              style={`--row:${row.ratio.toFixed(4)}; --gaps:${row.plates.length - 1}`}
+            >
+              {row.plates.map((plate) => (
+                <figure
+                  class="plate"
+                  style={`--r-plate:${plate.ratio.toFixed(4)}; --grow:${Math.round(plate.ratio * 1000)}`}
+                >
+                  <div class="print" style={plate.lie}>
+                    <Frame
+                      image={plate.image}
+                      alt={plate.alt}
+                      category={entry.data.category}
+                      widths={[400, 640, 960, 1280]}
+                      sizes="(max-width: 620px) 92vw, (max-width: 1100px) 46vw, 500px"
+                      loading={plate.n <= PER_ROW ? 'eager' : 'lazy'}
+                    />
+                  </div>
+                  {plate.caption && (
+                    <figcaption class="hand">
+                      <span class="plate-n mono">{String(plate.n).padStart(2, '0')}</span>
+                      {plate.caption}
+                    </figcaption>
+                  )}
+                </figure>
+              ))}
+            </div>
+          ))}
         </div>
       ) : (
         image && (
@@ -185,14 +198,25 @@ const older = i >= 0 && i < all.length - 1 ? all[i + 1] : undefined;
     margin-inline: auto;
   }
 
-  /* A gallery: one row, each print as wide as its shape asks for (--grow,
-     set above), so they share a height and their captions line up. */
+  /* A gallery: rows of two, each print as wide as its shape asks for (--grow,
+     set above), so a pair share a height and their captions line up. */
+  .rows {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s7);
+  }
   .plates {
+    width: 100%;
     display: flex;
     align-items: flex-start;
     gap: var(--s6);
     max-width: calc(var(--fit-h) * var(--row) + var(--s6) * var(--gaps));
     margin-inline: auto;
+  }
+  /* The odd one out at the end of a run keeps the size of its neighbours
+     above instead of filling the whole row. */
+  .plates.plates--lone {
+    width: calc((100% - var(--s6)) / 2);
   }
   .plate {
     flex: var(--grow) 1 0;
@@ -377,6 +401,9 @@ const older = i >= 0 && i < all.length - 1 ? all[i + 1] : undefined;
       flex-direction: column;
       gap: var(--s7);
       max-width: none;
+    }
+    .plates.plates--lone {
+      width: 100%;
     }
     .plate {
       flex: none;
