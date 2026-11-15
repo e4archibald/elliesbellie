@@ -1,12 +1,14 @@
 ---
 import Base from '../layouts/Base.astro';
+import Scribble from '../components/Scribble.astro';
 import { SITE } from '../lib/site';
 ---
 
 <Base title="About" description={SITE.description}>
   <div class="wrap page">
-    <p class="kicker">ABOUT</p>
+    <p class="kicker">About</p>
     <h1>Five hobbies, one archive.</h1>
+    <Scribble />
 
     <div class="body">
       <p>
@@ -18,7 +20,7 @@ import { SITE } from '../lib/site';
         There is no schedule and no theme. Entries go up when something is finished, or
         when something fails interestingly enough to be worth writing down.
       </p>
-      <p>Say hello: <a href="mailto:hello@example.com">hello@example.com</a>.</p>
+      <p>Say hello: <a class="u-link" href="mailto:hello@example.com">hello@example.com</a>.</p>
     </div>
   </div>
 </Base>
@@ -32,12 +34,12 @@ import { SITE } from '../lib/site';
     margin: 0 0 16px;
   }
   h1 {
-    font-size: clamp(32px, 5vw, 52px);
+    font-size: clamp(34px, 5vw, 56px);
     line-height: 1.02;
   }
   .body {
     margin-top: 28px;
-    font-size: 16.5px;
+    font-size: 17px;
     line-height: 1.75;
     color: var(--text);
   }
@@ -46,15 +48,5 @@ import { SITE } from '../lib/site';
   }
   .body a {
     color: var(--accent);
-    background-image: linear-gradient(currentColor, currentColor);
-    background-repeat: no-repeat;
-    background-position: 0 1.08em;
-    background-size: 100% 1px;
-    transition: background-size 0.3s var(--ease), color 0.25s;
-  }
-  .body a:hover,
-  .body a:focus-visible {
-    color: var(--accent-hover);
-    background-size: 0% 1px;
   }
 </style>

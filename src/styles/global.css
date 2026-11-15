@@ -1,52 +1,45 @@
 /* ───────────────────────────────────────────────────────────────────────────
-   Two modes, one skeleton.
+   The sketchbook.
 
-   The light mode is not the dark one inverted. Bright jade washes out on
-   paper, so light mode uses a deep, stone-dark jade for small text and keeps
-   the bright jade only inside the near-black open strip, where it still has
-   contrast to work with. Type, spacing, the five-strip skeleton and the rail
-   are identical in both — which is why this is one built page with a toggle
-   rather than two designs to maintain.
+   The page is a sheet of dotted paper; the type is graphite; anything added
+   afterwards — a note, a circle round a word, an underline — is in green pen.
+   Entries sit on it as loose prints with a strip of tape at the top. That is
+   the whole idea, and every page is built from those four things.
+
+   Dark mode is the same sketchbook at night, not an inversion: the sheet
+   goes dark, the graphite turns to chalk, the pen brightens so it still
+   reads, but the prints stay paper. They are objects lying on the page, and
+   paper does not go black when the light changes.
    ─────────────────────────────────────────────────────────────────────── */
 
 :root {
-  /* Light — paper with a jade cast. */
-  --bg: #e6f6ee;
-  --surface: #f9fffc;
-  --surface-2: #d9eee4;
-  --ink-rgb: 22 22 26;
+  /* The sheet. */
+  --bg: #f2f6f1;
+  --dot: rgb(42 43 46 / 17%);
+  --ink-rgb: 42 43 46;
   --ink: rgb(var(--ink-rgb));
-  --rule: rgb(var(--ink-rgb) / 14%);
-  --rule-soft: rgb(var(--ink-rgb) / 10%);
-  --accent: oklch(0.5 0.11 160); /* deep jade — holds up on paper */
-  --accent-hover: oklch(0.42 0.09 160);
-  --shadow: rgb(var(--ink-rgb) / 14%);
+  --rule: rgb(var(--ink-rgb) / 18%);
+  --rule-soft: rgb(var(--ink-rgb) / 11%);
 
-  /* Text scale. --text-3 is the AA floor for small copy in this mode; nothing
-     that carries information sits below it. There is deliberately no fainter
-     tier: on this paper nothing quieter clears 4.5:1, so the quiet end of the
-     hierarchy is made with size and letterspacing instead of opacity. */
-  --text: rgb(var(--ink-rgb));
-  --text-2: rgb(var(--ink-rgb) / 76%);
-  --text-3: rgb(var(--ink-rgb) / 62%);
-  --on-text: var(--open-ink);
-  --on-text-2: rgb(var(--open-ink-rgb) / 76%);
-  --on-text-3: rgb(var(--open-ink-rgb) / 58%);
+  /* Text scale. --text-3 is the AA floor for small copy on the sheet; there
+     is no fainter tier, the quiet end is made with size instead. */
+  --text: var(--ink);
+  --text-2: rgb(var(--ink-rgb) / 84%);
+  --text-3: #54565b;
 
-  /* Paper tooth. Light mode gets a printed surface, not a flat fill. */
-  --grain-opacity: 0.28;
-  --grain-blend: multiply;
+  /* The pen. Deep enough to hold 4.5:1 on paper at label sizes. */
+  --accent: oklch(0.48 0.11 160);
+  --accent-hover: oklch(0.4 0.09 160);
 
-  /* The open strip: a black well sunk into paper. It needs no edge — the
-     tonal jump is the edge. */
-  --open-bg: #0e1b15;
-  --open-ink-rgb: 247 245 240;
-  --open-ink: rgb(var(--open-ink-rgb));
-  --open-accent: oklch(0.82 0.13 160); /* bright jade survives here */
-  --open-rule: rgb(var(--open-ink-rgb) / 28%);
-  --open-edge: transparent;
-  --open-shadow: none;
-  --open-ground: #253930;
+  /* The prints. The same in both modes, apart from a little less glare at
+     night. Their own ink, so text on a print never follows the page. */
+  --print: #fdfefc;
+  --print-ink: #2a2b2e;
+  --print-ink-3: #54565b;
+  --print-ground: #eef1ec;
+  --tape: rgb(196 226 210 / 72%);
+  --lift: 0 1px 2px rgb(0 0 0 / 14%), 0 10px 22px -10px rgb(0 0 0 / 30%);
+  --lift-high: 0 2px 3px rgb(0 0 0 / 12%), 0 26px 42px -14px rgb(0 0 0 / 38%);
 
   --ease: cubic-bezier(0.2, 0.8, 0.25, 1);
   --page: 1100px;
@@ -61,42 +54,29 @@
   --s6: 34px;
   --s7: 48px;
   --s8: 68px;
-  --section: clamp(40px, 6vw, 78px);
+  --section: clamp(48px, 7vw, 90px);
 
   color-scheme: light;
 }
 
 :root[data-theme='dark'] {
-  --bg: #000c06;
-  --surface: #00190f;
-  --surface-2: #002316;
-  --ink-rgb: 244 243 240;
-  --rule: rgb(255 255 255 / 11%);
-  --rule-soft: rgb(255 255 255 / 8%);
-  --accent: oklch(0.78 0.13 160); /* bright jade, once the page is dark enough for it */
-  --accent-hover: oklch(0.86 0.12 160);
-  --shadow: rgb(0 0 0 / 60%);
+  --bg: #111513;
+  --dot: rgb(236 235 229 / 12%);
+  --ink-rgb: 236 235 229;
+  --rule: rgb(var(--ink-rgb) / 16%);
+  --rule-soft: rgb(var(--ink-rgb) / 10%);
 
-  --text: rgb(var(--ink-rgb));
-  --text-2: rgb(var(--ink-rgb) / 74%);
-  --text-3: rgb(var(--ink-rgb) / 54%);
-  --on-text: var(--open-ink);
-  --on-text-2: rgb(var(--open-ink-rgb) / 74%);
-  --on-text-3: rgb(var(--open-ink-rgb) / 58%);
+  --text-2: rgb(var(--ink-rgb) / 82%);
+  --text-3: rgb(var(--ink-rgb) / 66%);
 
-  /* Film grain rather than paper tooth, and it has to work additively. */
-  --grain-opacity: 0.2;
-  --grain-blend: screen;
+  --accent: oklch(0.8 0.12 160);
+  --accent-hover: oklch(0.87 0.11 160);
 
-  /* In light mode the open strip sinks. Here it RISES: same gesture, opposite
-     direction, because there is nothing darker than the page to sink into.
-     The edge and the lift do the work the tonal jump does on paper. */
-  --open-bg: #002115;
-  --open-ink-rgb: 247 246 243;
-  --open-accent: oklch(0.78 0.13 160);
-  --open-edge: rgb(255 255 255 / 10%);
-  --open-shadow: 0 18px 50px rgb(0 0 0 / 55%);
-  --open-ground: #0e3f2d;
+  --print: #e9ece6;
+  --print-ground: #dde2dc;
+  --tape: rgb(150 200 175 / 55%);
+  --lift: 0 1px 2px rgb(0 0 0 / 50%), 0 14px 28px -10px rgb(0 0 0 / 70%);
+  --lift-high: 0 2px 4px rgb(0 0 0 / 50%), 0 30px 50px -14px rgb(0 0 0 / 80%);
 
   color-scheme: dark;
 }
@@ -113,12 +93,17 @@ html {
 
 body {
   margin: 0;
-  background: var(--bg);
+  background-color: var(--bg);
+  /* The dot grid. One radial dot per 22px cell, fixed to the page so it
+     scrolls with the sheet like ruled paper would. */
+  background-image: radial-gradient(var(--dot) 1px, transparent 1.5px);
+  background-size: 22px 22px;
   color: var(--ink);
   font-family: var(--font-sans), system-ui, sans-serif;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
   transition: background-color 0.4s var(--ease), color 0.4s var(--ease);
 }
 
@@ -129,6 +114,7 @@ h3 {
   font-weight: 400;
   letter-spacing: -0.02em;
   margin: 0;
+  text-wrap: balance;
 }
 
 a {
@@ -142,17 +128,15 @@ img {
   height: auto;
 }
 
+button {
+  font: inherit;
+  color: inherit;
+}
+
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
   border-radius: 3px;
-}
-
-/* Utility for blocks that sit on the near-black ground in either mode. */
-.on-ground {
-  --ink-rgb: var(--open-ink-rgb);
-  --rule: rgb(var(--open-ink-rgb) / 16%);
-  --accent: var(--open-accent);
 }
 
 .wrap {
@@ -167,11 +151,22 @@ img {
   font-weight: 500;
   font-size: 11px;
   letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--accent);
 }
 
 .mono {
   font-family: var(--font-mono), ui-monospace, monospace;
+}
+
+/* Pencilled in. Caveat is a large face for its size — 22px of it sets about
+   as small as 16px of the sans — so nothing in it goes below 20px. */
+.hand {
+  font-family: var(--font-hand), 'Segoe Print', cursive;
+  font-weight: 500;
+  font-size: clamp(22px, 2.3vw, 26px);
+  line-height: 1.22;
+  color: var(--accent);
 }
 
 .skip {
@@ -201,37 +196,54 @@ img {
   border: 0;
 }
 
-/* ── Grain ────────────────────────────────────────────────────────────────
-   A site about film, ink and paper should not be a flat hex fill. One fixed
-   noise layer over everything: paper tooth in light, film grain in dark.
-   Static, so it costs nothing to animate and nothing to scroll.
-
-   Kept deliberately weak. `screen` and `multiply` are the only blends that
-   produce visible texture at these extremes — soft-light leaves the black
-   point untouched but is invisible on it — and both shift the base value,
-   so the strength is set where the grain reads without greying the page. */
-body::after {
+/* ── The print ────────────────────────────────────────────────────────────
+   A sheet laid on the page: a white border, a shadow under it and a strip
+   of tape across the top. --r is its tilt, --tr the tape's. Used by the
+   cards, the figures on an entry, the thumbnails in the log. */
+.print {
+  /* Anything written on a print is written on paper, in either mode. */
+  --ink-rgb: 42 43 46;
+  --ink: rgb(var(--ink-rgb));
+  --text-2: rgb(var(--ink-rgb) / 84%);
+  --text-3: var(--print-ink-3);
+  --accent: oklch(0.48 0.11 160);
+  --accent-hover: oklch(0.4 0.09 160);
+  position: relative;
+  background: var(--print);
+  color: var(--print-ink);
+  padding: 10px;
+  box-shadow: var(--lift);
+  rotate: var(--r, 0deg);
+}
+.print::before {
   content: '';
-  position: fixed;
-  inset: 0;
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  width: 74px;
+  max-width: 50%;
+  height: 22px;
+  translate: -50% 0;
+  rotate: var(--tr, -3deg);
+  background: var(--tape);
+  box-shadow: 0 1px 1px rgb(0 0 0 / 6%);
+  z-index: 1;
   pointer-events: none;
-  z-index: 60;
-  opacity: var(--grain-opacity);
-  mix-blend-mode: var(--grain-blend);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.86' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.42'/%3E%3C/svg%3E");
 }
 
-/* Links in running text draw their rule on hover rather than carrying it. */
+/* Links in running text: a pen underline that goes wavy on hover. */
 .u-link {
-  background-image: linear-gradient(currentColor, currentColor);
-  background-repeat: no-repeat;
-  background-position: 0 100%;
-  background-size: 0% 1px;
-  transition: background-size 0.35s var(--ease), color 0.25s;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  transition: color 0.25s, text-decoration-color 0.25s;
 }
 .u-link:hover,
 .u-link:focus-visible {
-  background-size: 100% 1px;
+  color: var(--accent);
+  text-decoration-style: wavy;
+  text-decoration-color: var(--accent);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -240,6 +252,8 @@ body::after {
   *::after {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    transition-delay: 0s !important;
     scroll-behavior: auto !important;
   }
 }

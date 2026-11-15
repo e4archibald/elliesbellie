@@ -28,13 +28,12 @@ const { home = false } = Astro.props;
 <style>
   .wordmark {
     font-weight: 500;
-    font-size: 13px;
+    font-size: 14px;
     color: var(--ink);
     line-height: 1.3;
-    /* Deliberately no nowrap. On the narrowest phones the nav has no room
-       for a name of more than one word beside the links and the toggle; the
-       mark is the only flex item there that can give, so it breaks onto two
-       lines at the space and stays on one line everywhere else. */
+    /* One line, always: on a phone the nav links drop to a row of their own
+       underneath, so the name never has to give way to them. */
+    white-space: nowrap;
   }
   .dot {
     color: var(--accent);

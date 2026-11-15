@@ -1,0 +1,343 @@
+---
+import EntryCard from './EntryCard.astro';
+import { CATEGORIES } from '../data/categories';
+import { url } from '../lib/site';
+import type { Entry } from '../lib/entries';
+
+interface Props {
+  entries: Entry[];
+  heading: string;
+  /** The pen-circled category filters. Off where the page is one category. */
+  filters?: boolean;
+  /** A way on, when the table is only showing some of them. */
+  more?: { href: string; label: string };
+  id?: string;
+}
+const { entries, heading, filters = false, more, id = 'table' } = Astro.props;
+
+// Only offer a filter that would leave something on the table.
+const present = CATEGORIES.filter((c) => entries.some((e) => e.data.category === c.slug));
+const countOf = (slug: string) => entries.filter((e) => e.data.category === slug).length;
+---
+
+<!--
+  The entries as loose prints on a table. Without JavaScript it is a tidy
+  grid of links with each print turned a little. With it, the prints are
+  dropped on as the table scrolls into view, can be picked up and moved
+  (mouse and pen — on a touchscreen a drag is a scroll, so they stay put),
+  tidied into rows, and thinned out by category with a circle in pen.
+-->
+<section class="table wrap" id={id} aria-labelledby={`${id}-h`} data-table>
+  <div class="table-head">
+    <h2 id={`${id}-h`}>{heading}</h2>
+    {
+      filters && present.length > 1 && (
+        <div class="filters" role="group" aria-label="Show only" hidden>
+          <button type="button" class="hand" data-category="all" aria-pressed="true">
+            all
+            <svg aria-hidden="true"><path pathLength="1" d="" /></svg>
+          </button>
+          {present.map((c) => (
+            <button type="button" class="hand" data-category={c.slug} aria-pressed="false">
+              {c.name.toLowerCase()}
+              <sup class="mono">{countOf(c.slug)}</sup>
+              <svg aria-hidden="true"><path pathLength="1" d="" /></svg>
+            </button>
+          ))}
+        </div>
+      )
+    }
+    <button type="button" class="tidy hand" aria-pressed="false" hidden>tidy up</button>
+  </div>
+
+  <div class="board">
+    {entries.map((entry, i) => <EntryCard entry={entry} index={i} />)}
+  </div>
+
+  {
+    more && (
+      <p class="more">
+        <a class="hand u-link" href={url(more.href)}>{more.label}</a>
+      </p>
+    )
+  }
+</section>
+
+<style>
+  .table {
+    margin-top: var(--section);
+    scroll-margin-top: 80px;
+  }
+
+  .table-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 24px;
+  }
+  h2 {
+    font-size: clamp(30px, 3.6vw, 42px);
+    line-height: 1.05;
+    margin-right: auto;
+  }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 4px;
+  }
+  .filters button,
+  .tidy {
+    position: relative;
+    min-height: 44px;
+    padding: 4px 12px;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 23px;
+    color: var(--text-3);
+    transition: color 0.25s;
+  }
+  .filters button:hover,
+  .filters button[aria-pressed='true'] {
+    color: var(--ink);
+  }
+  .filters sup {
+    font-size: 10px;
+    font-weight: 500;
+    margin-left: 2px;
+    color: var(--text-3);
+  }
+  /* The circle round the chosen one, drawn on the moment it is chosen. Its
+     path is fitted to each word by the script below. */
+  .filters svg {
+    position: absolute;
+    inset: -2px -6px;
+    width: calc(100% + 12px);
+    height: calc(100% + 4px);
+    overflow: visible;
+    pointer-events: none;
+  }
+  .filters path {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 0.15s;
+  }
+  .filters button[aria-pressed='true'] path {
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 0.6s ease-out;
+  }
+
+  .tidy {
+    color: var(--accent);
+    text-decoration: underline wavy 1px;
+    text-underline-offset: 6px;
+  }
+
+  .board {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    align-items: start;
+    gap: 46px clamp(20px, 3vw, 38px);
+    padding-top: 34px;
+  }
+
+  /* Picked up: it follows the pointer exactly, so nothing eases. */
+  .board :global(.card.lifted) {
+    transition: rotate 0.3s var(--ease), box-shadow 0.3s;
+    box-shadow: var(--lift-high);
+    cursor: grabbing;
+  }
+  .board :global(.card.dim) {
+    opacity: 0.16;
+    filter: grayscale(1);
+  }
+  /* The offsets are set inline on each card, so only !important reaches
+     past them. */
+  .board.tidied :global(.card) {
+    --ox: 0px !important;
+    --oy: 0px !important;
+    rotate: 0deg;
+  }
+
+  /* Dropped onto the table, one after another. Hidden until then only when
+     the script is there to drop them — and if it never runs, the failsafe
+     puts them down anyway after a moment. */
+  :global(.js) .board:not([data-ready]) :global(.card) {
+    opacity: 0;
+    animation: failsafe 0s 2s forwards;
+  }
+  :global(.js) .board[data-ready]:not(.landed) :global(.card) {
+    opacity: 0;
+  }
+  .board.landed :global(.card) {
+    animation: drop 0.75s var(--ease) backwards;
+    animation-delay: calc(var(--i) * 65ms);
+  }
+  @keyframes drop {
+    from {
+      opacity: 0;
+      scale: 1.06;
+      transform: translateY(-28px);
+    }
+  }
+  @keyframes failsafe {
+    to {
+      opacity: 1;
+    }
+  }
+
+  .more {
+    margin: 40px 0 0;
+    text-align: right;
+  }
+  .more a {
+    font-weight: 600;
+  }
+
+  @media (max-width: 560px) {
+    .board {
+      --scatter: 0.35;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 34px 16px;
+    }
+    .tidy {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // A loose pen circle, fitted to the box it goes round.
+  const ring = (w: number, h: number) =>
+    `M${w * 0.5} ${h * 0.1} C${w * 0.86} ${h * 0.03} ${w * 0.99} ${h * 0.32} ${w * 0.97} ${h * 0.55} ` +
+    `C${w * 0.93} ${h * 0.9} ${w * 0.4} ${h * 0.98} ${w * 0.12} ${h * 0.85} ` +
+    `C${w * 0.02} ${h * 0.74} ${w * 0.03} ${h * 0.26} ${w * 0.3} ${h * 0.13} ` +
+    `C${w * 0.45} ${h * 0.07} ${w * 0.6} ${h * 0.08} ${w * 0.68} ${h * 0.12}`;
+
+  for (const table of document.querySelectorAll<HTMLElement>('[data-table]')) {
+    const board = table.querySelector<HTMLElement>('.board')!;
+    const cards = [...board.querySelectorAll<HTMLElement>('.card')];
+    board.dataset.ready = '';
+
+    // ── Dropped on as the table comes into view ──
+    if (reduce || !('IntersectionObserver' in window)) {
+      board.classList.add('landed');
+    } else {
+      const io = new IntersectionObserver(
+        ([e]) => {
+          if (!e.isIntersecting) return;
+          board.classList.add('landed');
+          io.disconnect();
+        },
+        { threshold: 0.12 },
+      );
+      io.observe(board);
+    }
+
+    // ── Filters ──
+    const filters = table.querySelector<HTMLElement>('.filters');
+    if (filters) {
+      filters.hidden = false;
+      const buttons = [...filters.querySelectorAll<HTMLButtonElement>('button')];
+      const fit = () =>
+        buttons.forEach((b) => {
+          const svg = b.querySelector('svg')!;
+          const w = b.offsetWidth + 12;
+          const h = b.offsetHeight + 4;
+          svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+          svg.querySelector('path')!.setAttribute('d', ring(w, h));
+        });
+      document.fonts.ready.then(fit);
+      addEventListener('resize', fit);
+
+      buttons.forEach((b) =>
+        b.addEventListener('click', () => {
+          buttons.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+          const want = b.dataset.category;
+          for (const card of cards) {
+            const off = want !== 'all' && card.dataset.category !== want;
+            card.classList.toggle('dim', off);
+            card.inert = off;
+          }
+        }),
+      );
+    }
+
+    // ── Tidy up / scatter ──
+    const tidy = table.querySelector<HTMLButtonElement>('.tidy');
+    if (tidy) {
+      tidy.hidden = false;
+      tidy.addEventListener('click', () => {
+        const on = board.classList.toggle('tidied');
+        tidy.setAttribute('aria-pressed', String(on));
+        tidy.textContent = on ? 'scatter them again' : 'tidy up';
+        for (const card of cards) {
+          card.style.removeProperty('--dx');
+          card.style.removeProperty('--dy');
+        }
+      });
+    }
+
+    // ── Pick up and move ──
+    let top = cards.length;
+    for (const card of cards) {
+      let grab: { x: number; y: number; dx: number; dy: number; moved: boolean } | null = null;
+
+      card.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'touch' || e.button !== 0) return;
+        grab = {
+          x: e.clientX,
+          y: e.clientY,
+          dx: parseFloat(card.style.getPropertyValue('--dx')) || 0,
+          dy: parseFloat(card.style.getPropertyValue('--dy')) || 0,
+          moved: false,
+        };
+      });
+
+      card.addEventListener('pointermove', (e) => {
+        if (!grab) return;
+        const dx = e.clientX - grab.x;
+        const dy = e.clientY - grab.y;
+        if (!grab.moved) {
+          if (Math.hypot(dx, dy) < 6) return;
+          grab.moved = true;
+          card.setPointerCapture(e.pointerId);
+          card.classList.add('lifted');
+          card.style.zIndex = String(++top);
+        }
+        card.style.setProperty('--dx', `${grab.dx + dx}px`);
+        card.style.setProperty('--dy', `${grab.dy + dy}px`);
+      });
+
+      const drop = () => {
+        if (!grab) return;
+        if (grab.moved) {
+          card.classList.remove('lifted');
+          card.dataset.dragged = '';
+          card.style.setProperty('--r', `${(Math.random() * 10 - 5).toFixed(1)}deg`);
+        }
+        grab = null;
+      };
+      card.addEventListener('pointerup', drop);
+      card.addEventListener('pointercancel', drop);
+
+      // A drag is not a click: putting a print down should not open it.
+      card.addEventListener('click', (e) => {
+        if ('dragged' in card.dataset) {
+          e.preventDefault();
+          delete card.dataset.dragged;
+        }
+      });
+    }
+  }
+</script>

@@ -1,0 +1,153 @@
+---
+/**
+ * The homepage headline, drawn in pencil: the outline of every letter is
+ * traced, then filled, then "finished." is underlined in pen, then the note
+ * beside it is pencilled in. Without JavaScript, or with reduced motion, it
+ * is simply there.
+ */
+---
+
+<section class="hero wrap">
+  <h1 class="headline">
+    <span class="visually-hidden">A working archive, filed as finished.</span>
+    <svg aria-hidden="true" viewBox="-6 13 610 196">
+      <text x="0" y="80">A working archive,</text>
+      <text x="0" y="172">filed as <tspan class="last">finished.</tspan></text>
+      <path class="ul" pathLength="1" d="M308 190 C 380 197, 450 185, 548 192 M 345 199 C 410 202, 470 195, 535 199"></path>
+    </svg>
+  </h1>
+
+  <p class="hand note">
+    Everything I make ends up here eventually. No schedule, no theme, occasionally an essay
+    about why any of it is worth doing.
+  </p>
+</section>
+
+<style>
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    gap: var(--s5) var(--s6);
+    align-items: end;
+    padding-top: clamp(24px, 5vw, 56px);
+  }
+
+  .headline svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  text {
+    font-family: var(--font-serif), Georgia, serif;
+    font-size: 88px;
+    letter-spacing: -1.6px;
+    fill: var(--ink);
+    stroke: var(--ink);
+    stroke-width: 0;
+  }
+  .ul {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 3.2;
+    stroke-linecap: round;
+  }
+
+  .note {
+    margin: 0 0 18px;
+    max-width: 30ch;
+    rotate: -2.5deg;
+  }
+
+  /* ── Drawn in ── Only when scripted: the script waits for the font before
+     it starts, or the outlines would be traced in Georgia. If it never
+     runs, the failsafe shows everything after a moment. */
+  :global(.js) .headline:not(.go) text,
+  :global(.js) .headline:not(.go) .ul,
+  :global(.js) .hero:not(.go) .note {
+    opacity: 0;
+    animation: failsafe 0s 2.5s forwards;
+  }
+  @keyframes failsafe {
+    to {
+      opacity: 1;
+    }
+  }
+
+  .go text {
+    fill-opacity: 0;
+    stroke-width: 0.9;
+    stroke-dasharray: 420;
+    stroke-dashoffset: 420;
+    animation:
+      trace 2.6s cubic-bezier(0.5, 0.1, 0.3, 1) forwards,
+      ink 1s 1.9s forwards;
+  }
+  .go text:nth-of-type(2) {
+    animation-delay: 0.5s, 2.3s;
+  }
+  .go .ul {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: trace 0.9s 2.9s ease-out forwards;
+  }
+  @keyframes trace {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes ink {
+    to {
+      fill-opacity: 1;
+      stroke-width: 0;
+    }
+  }
+
+  .hero.go .note {
+    animation: pencil 0.9s 3.2s var(--ease) backwards;
+  }
+  @keyframes pencil {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .hero {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .note {
+      margin-bottom: 0;
+    }
+  }
+</style>
+
+<script>
+  const hero = document.querySelector<HTMLElement>('.hero');
+  const headline = hero?.querySelector<HTMLElement>('.headline');
+  const svg = headline?.querySelector('svg');
+
+  if (hero && headline && svg) {
+    document.fonts.ready.then(() => {
+      // Fit the drawing to the words as this browser set them, and put the
+      // pen line under the word it underlines.
+      const box = svg.getBBox();
+      const last = svg.querySelector<SVGTextContentElement>('.last')!.getBBox();
+      const x = last.x;
+      const w = last.width;
+      const y = last.y + last.height + 4;
+      svg.querySelector('.ul')!.setAttribute(
+        'd',
+        `M${x - 4} ${y} C ${x + w * 0.3} ${y + 7}, ${x + w * 0.65} ${y - 5}, ${x + w + 6} ${y + 2} ` +
+          `M${x + w * 0.15} ${y + 9} C ${x + w * 0.45} ${y + 12}, ${x + w * 0.7} ${y + 5}, ${x + w - 4} ${y + 9}`,
+      );
+      svg.setAttribute('viewBox', `${box.x - 6} ${box.y - 6} ${box.width + 12} ${box.height + 30}`);
+
+      requestAnimationFrame(() => {
+        headline.classList.add('go');
+        hero.classList.add('go');
+      });
+    });
+  }
+</script>

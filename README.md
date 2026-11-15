@@ -1,8 +1,9 @@
 # Ellie’s bellie
 
 A personal archive site — photographs, drawings, essays, electronics, found
-things. Built from design **6a**: one page, two modes, a five-strip index, and
-a contents list set beside the headline.
+things. Laid out as a **sketchbook**: dotted paper, pencil for the type, green
+pen for anything added afterwards, and every entry a taped-down print on the
+page.
 
 Static [Astro](https://astro.build) site, deployed to GitHub Pages by Actions
 on every push to `main`.
@@ -29,7 +30,7 @@ title: Estuary, before the tide turned
 date: 2026-09-16
 category: photography     # photography | drawing | essays | electronics | found
 kicker: FILM · 35MM       # the small mono line above the title
-blurb: One or two sentences. Used on the strip, the rail and the log.
+blurb: One or two sentences. Pencilled under the title, and used in the log.
 image: ./estuary.jpg      # optional — omit and the hatched placeholder stands in
 imageAlt: Wet sand at low tide
 slot: film scan · 4:5     # the text inside that placeholder
@@ -39,17 +40,22 @@ draft: false              # true hides it from production builds
 The body, in Markdown.
 ```
 
-That is the only step. The homepage strip counts, the featured item per
-category, the "recently added" rail, the log, the category pages and the RSS
-feed are all derived from these files — nothing to update by hand.
+That is the only step. The cards on the homepage table and its filter
+counts, the two-stage slider, the log, the category pages, the counts in the
+footer and the RSS feed are all derived from these files — nothing to update
+by hand.
 
 ### Several images on one page
 
 For the stages of one drawing, or a run of frames, add a `gallery`. On the
 entry page they sit side by side at the same height (one above the other on
 phones), each with an optional caption, numbered in order. `image` is still
-the one that stands for the entry everywhere else — the strip, the cards, the
-log — so it is usually one of the gallery images too.
+the one that stands for the entry everywhere else — the cards and the log —
+so it is usually one of the gallery images too.
+
+The newest entry with two or more gallery images also gets the slider on the
+homepage: the first image laid over the second, with a line to drag between
+them. The captions label its two ends.
 
 ```yaml
 image: ./face-2.jpg
@@ -82,17 +88,17 @@ no camera details. It needs Pillow and numpy.
 python3 tools/clean-sketch.py photo.jpg src/content/log/name.jpg
 ```
 
-Portrait images are handled everywhere: the open strip fits them to its
-height, and an entry page never lets a figure run taller than about one
-screen.
+Portrait images are handled everywhere: a card crops to 4:5, and an entry
+page never lets a figure run taller than about one screen.
 
 ## Turning the site off-white
 
-`src/styles/global.css` holds both palettes as custom properties. The light
-mode is not the dark one inverted — bright jade washes out on paper, so light
-mode uses a deep, stone-dark jade for small text and keeps the bright jade only
-inside the near-black open strip, where it still has contrast to work with. Everything else is shared, which is why this is one built page with
-a toggle rather than two designs to maintain.
+`src/styles/global.css` holds both palettes as custom properties. Dark mode
+is the same sketchbook at night, not an inversion: the sheet goes dark, the
+graphite turns to chalk and the pen brightens so it still reads — but the
+prints stay paper, with their own ink, because they are objects lying on the
+page. Everything else is shared, which is why this is one built page with a
+toggle rather than two designs to maintain.
 
 The toggle follows the system preference until someone overrides it; the
 choice then persists in `localStorage`. An inline script in `src/layouts/
@@ -140,8 +146,8 @@ means changing that one line (plus a `base` if it moves under a path).
 
 ```
 src/
-  components/     Wordmark, Nav (+ theme toggle), Hero (+ IndexList), Strips,
-                  RecentRail, EntryCard, Frame, Footer
+  components/     Wordmark, Nav (+ theme toggle), DrawnHeadline, Compare,
+                  Table, EntryCard, Frame, Scribble, PencilTrail, Footer
   content/log/    the entries — one Markdown file each
   data/           the five categories, in page order
   layouts/        Base: head, fonts, theme script, nav + footer
@@ -152,19 +158,22 @@ src/
 
 ### Notes
 
-- **The five strips are CSS-only.** Five radios in one group and
-  `:has(:checked)` do the opening — no JavaScript, so they work on first paint,
-  and arrow-key navigation comes for free. On phones they stack.
-- **The hero index and the strips are one query.** `strips()` returns each
-  category with its real count and newest entry; the homepage asks once and
-  hands the same array to both. The counts beside the headline and the counts
-  on the strips cannot disagree, because they are the same numbers. Below
-  860px the index stands down — the stacked strips say the same thing, and
-  they open.
+- **Every print lies the same way everywhere.** A card's tilt, its tape's
+  tilt and how far it slid from its place are all worked out from the
+  entry's id (`tilt()` in `src/lib/entries.ts`), so an entry is turned the
+  same on the homepage, its category page and the log, and in every build.
+- **Moving things works for mouse and pen only.** On a touchscreen a drag is
+  a scroll, so the cards stay put and the pencil trail is off; the slider
+  still works by finger, and the filters and "tidy up" are ordinary buttons.
 - **Fonts are self-hosted** (`src/styles/fonts/`): Instrument Sans, Instrument
-  Serif, JetBrains Mono, latin + latin-ext only, ~144 KB total. No font-CDN
-  request when the page loads and no network call during the build, so a
-  deploy cannot fail because Google Fonts had a bad afternoon. All three are
-  SIL OFL 1.1 — see `src/styles/fonts/OFL.txt`.
-- **The only JavaScript on the page** is the theme toggle and the inline
-  pre-paint script that reads it. Everything else is HTML and CSS.
+  Serif, JetBrains Mono and Caveat (the handwriting), latin + latin-ext only,
+  ~235 KB total. No font-CDN request when the page loads and no network call
+  during the build, so a deploy cannot fail because Google Fonts had a bad
+  afternoon. All four are SIL OFL 1.1 — see `src/styles/fonts/OFL.txt`.
+- **Everything works without JavaScript.** The script draws the headline
+  in, drops the cards onto the table, and adds the dragging, filters,
+  slider handle and pencil trail. Without it the headline, the cards and both
+  stages are simply there; the inline pre-paint script hides the things that
+  draw themselves in only when it knows a script will draw them, and each has
+  a failsafe that shows it anyway after a moment. With reduced motion set,
+  nothing moves and the trail is off.

@@ -4,6 +4,7 @@ Version 1.1.
   Instrument Sans  — Copyright (c) Rhode Island Type Foundry
   Instrument Serif — Copyright (c) Rhode Island Type Foundry
   JetBrains Mono   — Copyright (c) JetBrains s.r.o.
+  Caveat           — Copyright 2014 The Caveat Project Authors
 
 Full licence text: https://openfontlicense.org/open-font-license-official-text/
 
