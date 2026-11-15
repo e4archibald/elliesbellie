@@ -2,7 +2,7 @@
 title: Sun on the wall, bag on the bed
 date: 2026-11-15
 category: photography
-kicker: B&W FILM · 35MM
+kicker: KENTMERE PAN 400 · 35MM
 blurb: Sun coming in across the wall, and a rucksack dropped on an unmade bed.
 image: ./sun-on-the-wall.jpg
 imageAlt: >-

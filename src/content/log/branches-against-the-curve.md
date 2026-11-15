@@ -2,7 +2,7 @@
 title: Branches against the curve
 date: 2026-11-15
 category: photography
-kicker: B&W FILM · 35MM
+kicker: KENTMERE PAN 400 · 35MM
 blurb: Thin branches, half in leaf, in front of a curved office block gone soft behind them.
 image: ./branches-against-the-curve.jpg
 imageAlt: >-

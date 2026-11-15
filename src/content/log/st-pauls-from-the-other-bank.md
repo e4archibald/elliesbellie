@@ -2,7 +2,7 @@
 title: St Paul's, from the other bank
 date: 2026-11-15
 category: photography
-kicker: B&W FILM · THREE FRAMES
+kicker: KENTMERE PAN 400 · THREE FRAMES
 blurb: Three looks across the Thames on the same walk. Two cranes, a lot of water, and the dome keeping an eye on things.
 image: ./st-pauls-from-the-other-bank-1.jpg
 imageAlt: >-

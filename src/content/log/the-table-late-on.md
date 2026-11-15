@@ -2,7 +2,7 @@
 title: The table, late on
 date: 2026-11-15
 category: photography
-kicker: B&W FILM · 35MM
+kicker: KENTMERE PAN 400 · 35MM
 blurb: A bottle, a laptop, scissors and a spoon — whatever was on the table at the time.
 image: ./the-table-late-on.jpg
 imageAlt: >-

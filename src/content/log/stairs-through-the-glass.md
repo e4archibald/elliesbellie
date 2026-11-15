@@ -2,7 +2,7 @@
 title: Stairs, through the glass
 date: 2026-11-15
 category: photography
-kicker: B&W FILM · NIGHT
+kicker: KENTMERE PAN 400 · NIGHT
 blurb: The stairs outside, lit up at night, with the plants on the windowsill laid over the top of them.
 image: ./stairs-through-the-glass.jpg
 imageAlt: >-

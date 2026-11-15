@@ -2,7 +2,7 @@
 title: Somebody was blowing bubbles
 date: 2026-11-15
 category: photography
-kicker: B&W FILM · FOUR FRAMES
+kicker: KENTMERE PAN 400 · FOUR FRAMES
 blurb: Someone on the river path was making bubbles bigger than the people walking past. Four frames of them drifting into the crowd.
 image: ./somebody-was-blowing-bubbles-4.jpg
 imageAlt: >-
